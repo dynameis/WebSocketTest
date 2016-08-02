@@ -1,0 +1,53 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+</head>
+<body>
+    <input type="text" id="msg" />
+    <button type="button" id="send">Send</button>
+
+    <ul id="rev"></ul>
+    <script>
+        var ws;
+        function str2ab(str) {
+            var buf = new ArrayBuffer(str.length * 2); // 2 bytes for each char
+            var bufView = new Uint16Array(buf);
+            for (var i = 0, strLen = str.length; i < strLen; i++) {
+                bufView[i] = str.charCodeAt(i);
+            }
+            return buf;
+        }
+        function loaded() {
+            var text = document.getElementById('msg');
+            var ul = document.getElementById('rev');
+            var insertMessage = function (msg) {
+                var li = document.createElement('li');
+                li.innerText = msg;
+                ul.insertBefore(li, ul.childNodes[0]);
+            }
+
+            ws = new WebSocket("ws://" + window.location.host);
+            //ws.binaryType = "arraybuffer";
+            ws.onmessage = function (msg) {
+                insertMessage(msg.data);
+            }
+
+            ws.onclose = function (e) {
+                console.log(e);
+                insertMessage('ws close reason=' + e.reason);
+            }
+            document.getElementById('send').addEventListener('click', function () {
+                var v = text.value;
+                if (v) {
+                    //ws.send(str2ab(v));
+                    ws.send(v);
+
+                }
+            });
+        }
+        window.onload = loaded;
+    </script>
+</body>
+</html>
